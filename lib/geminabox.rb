@@ -4,6 +4,7 @@ require 'builder'
 require 'sinatra/base'
 require 'rubygems/builder'
 require 'rubygems/indexer'
+require 'rubygems/dependency_installer'
 require 'hostess'
 require 'geminabox/version'
 require 'rss/atom'
@@ -33,6 +34,7 @@ class Geminabox < Sinatra::Base
 
   autoload :GemVersionCollection, "geminabox/gem_version_collection"
   autoload :DiskCache, "geminabox/disk_cache"
+  autoload :DependencyFetcher, "geminabox/dependency_fetcher"
 
   before do
     headers 'X-Powered-By' => "geminabox #{GeminaboxVersion}"
@@ -120,7 +122,9 @@ class Geminabox < Sinatra::Base
         f << blk
       end
     end
-    reindex
+
+    install_dependencies(Geminabox.data, gem_name)
+    #reindex
 
     if api_request?
       "Gem #{gem_name} received and indexed."
@@ -166,6 +170,10 @@ HTML
     disk_cache.flush
   end
 
+  def install_dependencies(path, gem_name)
+    Geminabox::DependencyFechter.fetch path, gem_name
+  end
+   
   def indexer
     Gem::Indexer.new(settings.data, :build_legacy => settings.build_legacy)
   end
