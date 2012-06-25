@@ -1,4 +1,3 @@
-
 class Geminabox::DependencyFetcher
 
   class << self 
@@ -60,8 +59,13 @@ class Geminabox::DependencyFetcher
 
       @path = path
 
+      #
+      # Reset Gem Path to default current gem path
+      #
       reset_gem_spec
+
       @inst = Gem::DependencyInstaller.new
+
       @specs_and_sources = @inst.find_spec_by_name_and_version gem_name, version
 
       spec = @specs_and_sources.map {|spec, _| spec}
@@ -71,6 +75,7 @@ class Geminabox::DependencyFetcher
       to_do = spec.dup
 
       find_dependencies to_do, dep
+
       dep.each do |d|
         _, source_uri = @specs_and_sources.assoc d
         gem_file_name = File.basename d.cache_file
