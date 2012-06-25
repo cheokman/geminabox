@@ -8,6 +8,7 @@ require 'rubygems/dependency_installer'
 require 'hostess'
 require 'geminabox/version'
 require 'rss/atom'
+require "geminabox_client"
 
 class Geminabox < Sinatra::Base
   enable :static, :methodoverride
@@ -17,7 +18,9 @@ class Geminabox < Sinatra::Base
   set :build_legacy, false
   set :incremental_updates, false
   set :views, File.join(File.dirname(__FILE__), *%w[.. views])
+  set :master, false
   set :allow_replace, false
+  set :sync_hosts, []
   use Hostess
 
   class << self
@@ -35,6 +38,7 @@ class Geminabox < Sinatra::Base
   autoload :GemVersionCollection, "geminabox/gem_version_collection"
   autoload :DiskCache, "geminabox/disk_cache"
   autoload :DependencyFetcher, "geminabox/dependency_fetcher"
+  autoload :GemSync, "geminabox/gem_sync"
 
   before do
     headers 'X-Powered-By' => "geminabox #{GeminaboxVersion}"
@@ -123,8 +127,7 @@ class Geminabox < Sinatra::Base
       end
     end
 
-    install_dependencies(Geminabox.data, gem_name)
-    #reindex
+    post_process(gem_name)
 
     if api_request?
       "Gem #{gem_name} received and indexed."
@@ -170,8 +173,24 @@ HTML
     disk_cache.flush
   end
 
+  def post_process(gem_name)
+    if Geminabox.master
+      install_dependencies(Geminabox.data, gem_name)
+      sync_gems(Geminabox.data, Geminabox.sync_hosts)
+    else
+      reindex
+    end
+  end
+
   def install_dependencies(path, gem_name)
-    Geminabox::DependencyFechter.fetch path, gem_name
+    Geminabox::DependencyFetcher.fetch path, gem_name
+  end
+
+  def sync_gems(path, hosts)
+   hosts.each do |host|
+     sync_client = Geminabox::Sync.new(path, host)
+     sync_client.sync
+   end
   end
    
   def indexer
