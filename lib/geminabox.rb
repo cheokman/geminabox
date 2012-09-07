@@ -39,6 +39,7 @@ class Geminabox < Sinatra::Base
   autoload :DiskCache, "geminabox/disk_cache"
   autoload :DependencyFetcher, "geminabox/dependency_fetcher"
   autoload :GemSync, "geminabox/gem_sync"
+  autoload :Bundler, "geminabox/bundler"
 
   before do
     headers 'X-Powered-By' => "geminabox #{GeminaboxVersion}"
@@ -188,7 +189,7 @@ HTML
 
   def sync_gems(path, hosts)
    hosts.each do |host|
-     sync_client = Geminabox::Sync.new(path, host)
+     sync_client = Geminabox::GemSync.new(path, host)
      sync_client.sync
    end
   end
