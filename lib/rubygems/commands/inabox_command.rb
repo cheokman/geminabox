@@ -23,11 +23,19 @@ class Gem::Commands::InaboxCommand < Gem::Command
     add_option('-g', '--host HOST', "Host to upload to.") do |value, options|
       options[:host] = value
     end
+
+    add_option('-b', '--bundler', "Install gem from bundler's Gemfile") do |value, options|
+      options[:bundler] = true
+    end
   end
 
   def last_minute_requires!
     require 'yaml'
     require File.expand_path("../../../geminabox_client.rb", __FILE__)
+    if options[:bundler]
+      require 'bundler'
+      require File.expand_path("../../../geminabox.rb", __FILE__)
+    end
   end
 
   def execute
@@ -36,8 +44,13 @@ class Gem::Commands::InaboxCommand < Gem::Command
     configure unless geminabox_host
 
     if options[:args].size == 0
-      say "You didn't specify a gem, looking for one in . and in ./pkg/..."
-      gemfiles = [GeminaboxClient::GemLocator.find_gem(Dir.pwd)]
+      if options[:bundler]
+        bundler = ::Geminabox::Bundler.load_gems
+        gemfiles = bundler.fetch_gems
+      else
+        say "You didn't specify a gem, looking for one in . and in ./pkg/..."
+        gemfiles = [GeminaboxClient::GemLocator.find_gem(Dir.pwd)]
+      end
     else
       gemfiles = get_all_gem_names
     end
@@ -84,4 +97,11 @@ class Gem::Commands::InaboxCommand < Gem::Command
     end
   end
 
+  def get_all_gems_from_bundler
+    gems = []
+    specs = Bunlder.definition.specs
+    specs.each do |s|
+      gems << [s.name, s.version.to_s]
+    end
+  end
 end
