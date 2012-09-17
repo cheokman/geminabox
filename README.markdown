@@ -45,11 +45,11 @@ Simples!
 
 ## Using Gemfile to deploy gems to gem server
 
-   gem install geminabox
+    gem install geminabox
 
 Change directory to your Gemfile location, then:
    
-   gem inabox -b
+    gem inabox -b
 
 All Gems listed in Gemfile will be updated to gem server
 
