@@ -43,6 +43,16 @@ RubyGems supports generating indexes for the so called legacy versions (< 1.2), 
 
 Simples!
 
+## Using Gemfile to deploy gems to gem server
+
+   gem install geminabox
+
+Change directory to your Gemfile location, then:
+   
+   gem inabox -b
+
+All Gems listed in Gemfile will be updated to gem server
+
 ## Licence
 
 Fork it, mod it, choose it, use it, make it better. All under the [do what the fuck you want to + beer/pizza public license][WTFBPPL].

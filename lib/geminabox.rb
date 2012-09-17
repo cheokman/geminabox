@@ -8,7 +8,7 @@ require 'rubygems/dependency_installer'
 require 'hostess'
 require 'geminabox/version'
 require 'rss/atom'
-require "geminabox_client"
+require 'geminabox_client'
 
 class Geminabox < Sinatra::Base
   enable :static, :methodoverride
